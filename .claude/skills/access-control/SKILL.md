@@ -21,32 +21,49 @@ Người dùng **non-tech**: họ chỉ cần điền/đưa CSV. Mọi thao tác
 
 ## Quy trình
 
-### Bước 1 — Lấy & kiểm tra CSV
+### Bước 1 — Đảm bảo thư mục `access-control/` ở gốc dự án
 
-- Nếu người dùng chưa có CSV, đưa họ mẫu [`assets/access-template.csv`](assets/access-template.csv) và giải thích cách điền (xem [`references/csv-schema.md`](references/csv-schema.md)).
-- Đọc CSV, validate: email đúng định dạng, mỗi `pages` trỏ tới slug có thật trong `site.config.json`. Báo lỗi cụ thể nếu có dòng sai (ví dụ slug không tồn tại) thay vì lặng lẽ bỏ qua.
+Người dùng khai báo quyền trong **file CSV ở gốc dự án**, KHÔNG phải trong thư mục skill — để họ sửa cho tiện. Chạy script tạo thư mục + file mẫu (idempotent, không ghi đè nếu đã có):
 
-### Bước 2 — Gom thành map path → danh sách email
+```bash
+bash .claude/skills/access-control/scripts/init-access-control.sh
+```
 
-CSV là email→pages; lật lại thành **path → [emails]** vì Access cấu hình theo từng app/path. Một email nhiều trang thì xuất hiện ở nhiều path.
+Nó tạo (nếu chưa có): `access-control/access.csv` (file người dùng sửa) + `access-control/README.txt` (hướng dẫn). Bảo người dùng mở `access-control/access.csv`, điền email + trang. Cách điền: xem [`references/csv-schema.md`](references/csv-schema.md).
 
-Ví dụ: `usr1@gmail.com, page1;page2` → `{ "/page1": ["usr1@..."], "/page2": ["usr1@..."] }`.
+> Nếu người dùng đã có sẵn file CSV/Excel của riêng họ, copy nội dung vào `access-control/access.csv` (hoặc trỏ `--csv <path>` khi chạy script ở bước 2).
 
-### Bước 3 — Đảm bảo login method OTP đã bật
+### Bước 2 — Xem trước (dry-run) để bắt lỗi
 
-Mặc định dùng OTP (One-Time PIN), không cần Google OAuth. Cách bật/kiểm tra qua API: xem [`references/cloudflare-access-api.md`](references/cloudflare-access-api.md) mục "Login method / OTP".
+Chạy thử KHÔNG đổi gì trên Cloudflare — script tự validate CSV (email, slug có thật trong `site.config.json`) và in những gì sẽ làm:
 
-### Bước 4 — Provision Access app + policy theo path (idempotent + sync)
+```bash
+node .claude/skills/access-control/scripts/sync-access.mjs --dry-run
+```
 
-Với mỗi path, tạo hoặc cập nhật một Access application scope theo `domain + path` và một policy Allow include đúng danh sách email. Chi tiết endpoint + body + curl mẫu: [`references/cloudflare-access-api.md`](references/cloudflare-access-api.md).
+Nếu báo lỗi CSV (email sai, slug không tồn tại…), bảo người dùng sửa `access-control/access.csv` rồi chạy lại. Đừng áp dụng khi còn lỗi.
 
-Hai nguyên tắc bắt buộc:
-- **Idempotent**: chạy lại nhiều lần không tạo trùng. Trước khi tạo, liệt kê app hiện có theo domain, nếu app cho path đó đã tồn tại thì cập nhật policy thay vì tạo mới.
-- **Sync theo CSV (CSV là nguồn chân lý)**: email không còn trong CSV cho một path thì gỡ khỏi policy; path không còn ai thì cân nhắc xóa app (hỏi người dùng trước khi xóa). Đừng chỉ "thêm" — phải phản ánh đúng CSV hiện tại.
+### Bước 3 — Áp dụng (provision + sync)
+
+```bash
+node .claude/skills/access-control/scripts/sync-access.mjs
+```
+
+Script lo trọn phần Cloudflare: bật OTP nếu chưa có, với mỗi trang tạo/cập nhật Access app (`domain + /slug*`) + policy Allow include đúng danh sách email. Nó **idempotent** (chạy lại không tạo trùng) và **sync theo CSV** (PUT toàn bộ danh sách → ai bị xóa khỏi CSV cũng mất quyền). Chi tiết cơ chế/endpoint: [`references/cloudflare-access-api.md`](references/cloudflare-access-api.md).
+
+### Bước 4 — Dọn trang thừa (chỉ khi cần, có xác nhận)
+
+Nếu một trang từng phân quyền giờ không còn dòng nào trong CSV, mặc định script **chỉ cảnh báo** chứ không xóa (an toàn). Sau khi **xác nhận với người dùng** rằng muốn mở lại trang đó cho công khai:
+
+```bash
+node .claude/skills/access-control/scripts/sync-access.mjs --prune
+```
+
+⚠️ `--prune` xóa Access app của trang thừa → trang đó trở lại public. Luôn hỏi người dùng trước.
 
 ### Bước 5 — Lưu trạng thái + xác nhận
 
-- Cập nhật `site.config.json`: `status.accessConfigured=true`, và (tùy chọn) lưu map path→app_id để lần sau cập nhật nhanh.
+- Cập nhật `site.config.json`: `status.accessConfigured=true`.
 - Tóm tắt cho người dùng: trang nào giờ giới hạn cho ai, và họ đăng nhập thế nào (mở trang → nhập email → nhận mã qua mail → vào). Gợi ý họ tự test bằng cửa sổ ẩn danh.
 
 ## Quy ước path

@@ -5,7 +5,7 @@
 ## Vị trí
 
 Đặt ở gốc thư mục làm việc của dự án: `./site.config.json`.
-Token KHÔNG nằm ở đây — token ở `./.cloudflare-secret` (đã gitignore).
+Token KHÔNG nằm ở đây — token ở `./.env` (đã gitignore).
 
 ## Schema
 

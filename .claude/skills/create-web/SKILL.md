@@ -57,11 +57,17 @@ cd <projectName>
 npm run build
 ```
 
-Build lỗi thì sửa trước khi deploy (thường do frontmatter sai hoặc link gãy).
+Build lỗi thì sửa trước khi deploy (thường do frontmatter sai hoặc link gãy). (Bước build này không bắt buộc tách riêng — script deploy ở bước 5 tự build; nhưng build thử trước giúp bắt lỗi sớm.)
 
 ### Bước 5 — Deploy lần đầu lên Cloudflare Pages
 
-Phần này gọi Cloudflare. Đi theo [`references/deploy-first.md`](references/deploy-first.md) — nó có sẵn lệnh wrangler + bước tạo project. Sau khi deploy:
+Chạy script deploy ở **gốc dự án** (nó nạp `.env`, tự tạo Pages project nếu chưa có, build rồi deploy):
+
+```bash
+bash .claude/skills/create-web/scripts/deploy.sh
+```
+
+Chi tiết / xử lý lỗi / phương án thủ công: [`references/deploy-first.md`](references/deploy-first.md). Sau khi deploy:
 - Set `status.webCreated = true`, `status.firstDeploy = true` trong `site.config.json`.
 - Đưa người dùng URL `<project>.pages.dev` và bảo họ mở thử.
 

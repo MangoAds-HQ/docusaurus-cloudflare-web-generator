@@ -1,6 +1,6 @@
 # Cloudflare Access API — provision app + policy theo path
 
-> 🔧 **Đây là phần connect Cloudflare. Để agent dựng script sau theo yêu cầu chủ dự án.** File này cho đủ endpoint, body mẫu và logic idempotent/sync để code lại bằng Node/curl. Schema API có thể đổi theo thời gian — agent NÊN đối chiếu nhanh với docs hiện hành (`https://developers.cloudflare.com/cloudflare-one/`) trước khi chạy thật, nhất là tên trường trong policy.
+> ✅ **Logic này đã được hiện thực sẵn trong [`../scripts/sync-access.mjs`](../scripts/sync-access.mjs)** — luồng chính chỉ cần chạy script đó (xem SKILL.md). File này giải thích cơ chế + endpoint + body mẫu để agent hiểu / đối chiếu / sửa script khi cần. Schema API có thể đổi theo thời gian — nếu script lỗi vì tên trường, đối chiếu docs hiện hành (`https://developers.cloudflare.com/cloudflare-one/`) rồi cập nhật script.
 
 ## Khái niệm
 
@@ -11,7 +11,7 @@
 ## Biến môi trường
 
 ```bash
-source .cloudflare-secret
+set -a; . ./.env; set +a    # nạp CF_API_TOKEN, CF_ACCOUNT_ID từ .env ở gốc dự án
 AUTH=(-H "Authorization: Bearer $CF_API_TOKEN")
 ACC="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
 ```

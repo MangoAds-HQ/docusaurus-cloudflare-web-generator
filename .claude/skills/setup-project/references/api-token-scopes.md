@@ -24,7 +24,7 @@ Khi tạo Custom Token, thêm các dòng sau (mỗi dòng để mức **Edit**):
 ## Kiểm tra token sau khi tạo
 
 ```bash
-source .cloudflare-secret
+source .env
 curl -s "https://api.cloudflare.com/client/v4/user/tokens/verify" \
   -H "Authorization: Bearer $CF_API_TOKEN"
 # success=true và status="active" là đạt

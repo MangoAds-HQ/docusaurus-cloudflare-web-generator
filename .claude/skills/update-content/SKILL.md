@@ -36,18 +36,13 @@ Người dùng đưa mô tả/text thô, agent chuyển thành Markdown. Tham kh
 
 ### Bước 3 — Build + redeploy
 
-Đi theo [`references/build-and-deploy.md`](references/build-and-deploy.md):
+Chạy script deploy ở **gốc dự án** (cùng script với create-web — build lại rồi đẩy bản mới; project đã tồn tại nên không tạo lại):
 
 ```bash
-cd <projectName>
-npm run build
-source ../.cloudflare-secret
-export CLOUDFLARE_API_TOKEN=$CF_API_TOKEN
-export CLOUDFLARE_ACCOUNT_ID=$CF_ACCOUNT_ID
-npx wrangler pages deploy build --project-name <projectName> --branch main
+bash .claude/skills/update-content/scripts/deploy.sh
 ```
 
-(Project đã tồn tại từ `create-web` nên không tạo lại, chỉ deploy.)
+Chi tiết / xử lý lỗi / lệnh thủ công: [`references/build-and-deploy.md`](references/build-and-deploy.md).
 
 ### Bước 4 — Xác nhận
 

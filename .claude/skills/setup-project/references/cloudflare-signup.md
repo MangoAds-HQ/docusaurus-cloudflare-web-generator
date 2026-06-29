@@ -35,7 +35,7 @@ Các bước:
 
 ## D. Agent nhận token
 
-Khi người dùng dán token + Account ID, agent lưu vào `.cloudflare-secret` (xem SKILL.md), kiểm tra token sống bằng endpoint verify, rồi tiếp tục. Không in lại token.
+Khi người dùng dán token + Account ID, agent ghi vào `.env` ở gốc dự án (xem SKILL.md), kiểm tra token sống bằng endpoint verify, rồi tiếp tục. Không in lại token.
 
 ## Nếu người dùng kẹt
 

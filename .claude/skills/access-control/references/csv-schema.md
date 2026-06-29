@@ -2,6 +2,10 @@
 
 CSV là cách người dùng non-tech khai báo "ai xem được trang nào". Schema cố định, đơn giản nhất có thể. CSV là **nguồn chân lý** — agent đồng bộ Access đúng theo nó.
 
+## Vị trí file
+
+File nằm ở **gốc dự án**: `./access-control/access.csv` — KHÔNG nằm trong thư mục skill, để người dùng tự mở sửa mà không phải đụng vào skill. Script `scripts/init-access-control.sh` tạo sẵn thư mục này (kèm `README.txt` hướng dẫn) nếu chưa có. Script đồng bộ `scripts/sync-access.mjs` đọc đúng file này (đổi được bằng `--csv <path>`).
+
 ## Định dạng
 
 Đúng 2 cột, có dòng tiêu đề:
@@ -27,7 +31,7 @@ usr3@gmail.com,page1;page3
 
 ## Validate trước khi áp dụng
 
-Agent kiểm tra và báo lỗi rõ ràng (không lặng lẽ bỏ qua):
+Script `sync-access.mjs` tự validate và báo lỗi rõ ràng (không lặng lẽ bỏ qua) — chạy `--dry-run` để kiểm tra trước khi áp dụng:
 
 1. Email sai định dạng → chỉ ra dòng nào.
 2. Slug trong `pages` không tồn tại trong `site.config.json` → báo "trang `xyz` không có trên web; các trang hiện có: ...".
@@ -37,9 +41,9 @@ Agent kiểm tra và báo lỗi rõ ràng (không lặng lẽ bỏ qua):
 
 - Email + trang **có trong CSV** → được cấp quyền.
 - Email từng có quyền nhưng **không còn trong CSV** cho trang đó → bị **gỡ** quyền (sync, không phải chỉ thêm).
-- Muốn cấm ai → xóa họ khỏi CSV rồi chạy lại skill.
+- Muốn cấm ai → xóa họ khỏi CSV rồi chạy lại skill (`sync-access.mjs`).
 
 ## Mẹo cho người dùng
 
-- Họ có thể sửa CSV bằng Excel / Google Sheets rồi xuất `.csv`. Nhắc xuất đúng định dạng CSV (UTF-8), không phải `.xlsx`.
-- Nếu họ quen Excel hơn, vẫn nhận `.xlsx` được — agent đọc rồi tự hiểu 2 cột `email`, `pages`.
+- Họ có thể sửa `access-control/access.csv` bằng Excel / Google Sheets rồi xuất lại `.csv` (UTF-8), không phải `.xlsx`. Giữ nguyên tên file `access.csv` để script đọc được.
+- Nếu họ quen Excel hơn và lỡ lưu `.xlsx`: agent đọc rồi chuyển nội dung về 2 cột `email`, `pages` trong `access-control/access.csv` giúp họ.

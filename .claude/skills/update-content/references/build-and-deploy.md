@@ -2,26 +2,25 @@
 
 Web đã tồn tại từ `create-web`. Đây chỉ là rebuild + đẩy bản mới. Không tạo lại project.
 
-## Chuẩn bị
+## Cách 1 — script deploy.sh (khuyến nghị)
+
+Chạy ở **gốc dự án** (nạp `.env`, build lại, deploy; project đã có nên bỏ qua bước tạo):
 
 ```bash
-source .cloudflare-secret      # đứng ở gốc dự án; nếu đang trong thư mục project thì source ../.cloudflare-secret
+bash .claude/skills/update-content/scripts/deploy.sh
+```
+
+Tùy chọn: `--no-build` nếu vừa `npm run build` xong và không muốn build lại.
+
+## Cách 2 — wrangler thủ công
+
+```bash
+set -a; . ./.env; set +a       # đứng ở gốc dự án; nếu đang trong thư mục project thì . ../.env
 export CLOUDFLARE_API_TOKEN=$CF_API_TOKEN
 export CLOUDFLARE_ACCOUNT_ID=$CF_ACCOUNT_ID
-```
 
-## Build
-
-```bash
 cd <projectName>
-npm run build      # output ra ./build
-```
-
-Nếu build báo lỗi, sửa trước (xem mục lỗi thường gặp). Đừng deploy bản build hỏng.
-
-## Deploy
-
-```bash
+npm run build      # output ra ./build, sửa trước nếu lỗi — đừng deploy bản hỏng
 npx wrangler pages deploy build --project-name <projectName> --branch main
 ```
 

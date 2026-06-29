@@ -48,7 +48,7 @@ Hoặc dùng `npx wrangler ...` từng lần (không cần cài global). Skill n
 Dự án này dùng API token (không dùng `wrangler login` tương tác). Set biến môi trường trước mỗi lệnh wrangler:
 
 ```bash
-source .cloudflare-secret
+source .env
 export CLOUDFLARE_API_TOKEN=$CF_API_TOKEN
 export CLOUDFLARE_ACCOUNT_ID=$CF_ACCOUNT_ID
 ```
