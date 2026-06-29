@@ -22,18 +22,30 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-# --- Nạp credentials từ .env ở gốc dự án ---
-if [ ! -f .env ]; then
-  echo "✗ Không thấy .env ở thư mục hiện tại. Hãy chạy setup-project trước." >&2
-  exit 1
+# --- Nạp credentials ---
+# Hỗ trợ 2 cách xác thực với Cloudflare:
+#   1) Token trong .env (CF_API_TOKEN + CF_ACCOUNT_ID) — phù hợp khi giao khách / CI,
+#      và là cách DUY NHẤT mà access-control (REST API) dùng được.
+#   2) Đăng nhập wrangler (npx wrangler login) — không cần token, gọn cho non-tech.
+# Có .env thì nạp; không có cũng không sao nếu đã wrangler login.
+if [ -f .env ]; then
+  set -a; . ./.env; set +a
 fi
-set -a; . ./.env; set +a
 
-: "${CF_API_TOKEN:?Thiếu CF_API_TOKEN trong .env}"
-: "${CF_ACCOUNT_ID:?Thiếu CF_ACCOUNT_ID trong .env}"
-# wrangler đọc các biến CLOUDFLARE_*:
-export CLOUDFLARE_API_TOKEN="$CF_API_TOKEN"
-export CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID"
+if [ -n "${CF_API_TOKEN:-}" ]; then
+  # Cách 1: dùng token từ .env (wrangler đọc biến CLOUDFLARE_*)
+  export CLOUDFLARE_API_TOKEN="$CF_API_TOKEN"
+  [ -n "${CF_ACCOUNT_ID:-}" ] && export CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID"
+else
+  # Cách 2: dựa vào phiên 'wrangler login' đã lưu
+  if ! npx --yes wrangler whoami >/dev/null 2>&1; then
+    echo "✗ Chưa có credential Cloudflare. Chạy 'npx wrangler login' hoặc tạo .env (CF_API_TOKEN)." >&2
+    echo "  Xem skill setup-project để biết chi tiết." >&2
+    exit 1
+  fi
+  # Nếu .env có sẵn account id thì truyền vào cho chắc (tài khoản có nhiều account):
+  [ -n "${CF_ACCOUNT_ID:-}" ] && export CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID"
+fi
 
 # --- Lấy projectName ---
 if [ -n "$PROJECT_OVERRIDE" ]; then
