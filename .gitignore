@@ -1,0 +1,16 @@
+# OS junk
+.DS_Store
+
+# Claude Code local machine settings (personal, not shared)
+settings.local.json
+**/settings.local.json
+
+# Secrets — never commit (defense in depth)
+.env
+.env.local
+.cloudflare-secret
+
+# Node / Docusaurus build artifacts (end-user projects)
+node_modules/
+build/
+.docusaurus/
